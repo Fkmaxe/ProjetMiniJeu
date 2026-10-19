@@ -25,5 +25,8 @@ jeu `:games:*` hérite automatiquement de la règle « jeu ». Les tests de buil
 
 Package Kotlin : `fr.nexus.gradle` (pas `fr.nexus.build`, que le motif `build/` du `.gitignore` exclurait).
 
+Tâches racine déjà présentes dans `build.gradle.kts` : `checkDependencyRules` (P0-02), `installGitHooks` (dépendance de `build`)
+et `testGitHooks` (dans `check`) (P0-12).
+
 Tâches racine restant à définir dans le `build.gradle.kts` racine : `checkI18n`,
-`collectJars`, `installGitHooks`, `packageRelease` (archives par type de serveur pour Pterodactyl, cf. `docs/17-deploiement-pterodactyl.md`).
+`collectJars`, `packageRelease` (archives par type de serveur pour Pterodactyl, cf. `docs/17-deploiement-pterodactyl.md`).

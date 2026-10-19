@@ -82,3 +82,5 @@ Refs: P2-06
 | `pre-commit` | `./gradlew spotlessCheck --offline -q` (rapide) ; refuse les fichiers interdits (§2) et les secrets évidents |
 
 Installation : `./gradlew installGitHooks` (copie `.githooks/*` dans `.git/hooks/`, rendue automatique par `build` — tâche P0-12). Aucune modification de config Git nécessaire.
+Les cas acceptés/refusés du hook `commit-msg` sont testés par `./gradlew testGitHooks` (dans `check`, script `.githooks/tests/commit-msg-test.sh`) ; la CI rejoue le même script sur les commits de la PR (P0-10).
+Les commits de fusion (`Merge …`) et `fixup!`/`squash!` ne sont contrôlés que pour l'attribution.

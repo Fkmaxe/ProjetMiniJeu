@@ -14,3 +14,33 @@ tasks.register("checkDependencyRules") {
 tasks.check {
     dependsOn(gradle.includedBuild("build-logic").task(":check"))
 }
+
+// Hooks Git versionnés (docs/16-git-workflow.md §5) : copiés dans .git/hooks, sans toucher à la config Git.
+val gitHooksDir = layout.projectDirectory.dir(".git/hooks")
+
+val installGitHooks = tasks.register<Copy>("installGitHooks") {
+    group = "build setup"
+    description = "Installe les hooks Git du dépôt (.githooks/) dans .git/hooks/."
+    from(layout.projectDirectory.dir(".githooks")) {
+        include("commit-msg", "pre-commit")
+    }
+    into(gitHooksDir)
+    filePermissions { unix("rwxr-xr-x") }
+    val hooksDirFile = gitHooksDir.asFile
+    onlyIf("dépôt Git présent") { hooksDirFile.parentFile.isDirectory }
+}
+
+tasks.build {
+    dependsOn(installGitHooks)
+}
+
+val testGitHooks = tasks.register<Exec>("testGitHooks") {
+    group = "verification"
+    description = "Vérifie les messages acceptés et refusés par le hook commit-msg."
+    inputs.dir(layout.projectDirectory.dir(".githooks"))
+    commandLine("bash", ".githooks/tests/commit-msg-test.sh")
+}
+
+tasks.check {
+    dependsOn(testGitHooks)
+}
