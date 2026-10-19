@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Vérifie un message de commit — docs/16-git-workflow.md §1 et §3.
+# Usage : commit-msg <fichier-message>   (appelé par Git ; réutilisé par la CI et les tests)
+set -euo pipefail
+
+readonly TYPES='feat|fix|refactor|perf|test|docs|build|ci|chore|style|revert'
+readonly SCOPES='common|data|api|core|combat|lobby|proxy|orchestrator|dropper|rush|bedwars|infra|deploy|docs|build|ci'
+readonly TYPES_NEEDING_REFS='feat|fix|refactor|perf|test'
+readonly MAX_SUBJECT_LENGTH=72
+readonly ATTRIBUTION='co-authored-by|claude-session|generated with|noreply@anthropic\.com|claude code|claude\.ai/code|🤖'
+
+fail() {
+  echo "commit-msg : $*" >&2
+  echo "Format attendu : <type>(<scope>): <résumé> … Refs: <ID> (docs/16-git-workflow.md §3)" >&2
+  exit 1
+}
+
+# Nombre de caractères (points de code UTF-8) indépendant de la locale : on retire les octets de continuation.
+char_count() {
+  printf '%s' "$1" | LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' '
+}
+
+message="$(grep -v '^#' "$1" || true)"
+subject="$(printf '%s\n' "${message}" | head -n 1)"
+
+if printf '%s\n' "${message}" | grep -Eiq "${ATTRIBUTION}"; then
+  fail "ligne d'attribution interdite (Co-Authored-By, lien de session, « Generated with », mention d'outil)"
+fi
+
+if [[ "${subject}" =~ ^(Merge|Revert\ \"|fixup!|squash!) ]]; then
+  exit 0
+fi
+
+if ! printf '%s' "${subject}" | grep -Eq "^(${TYPES})(\((${SCOPES})(,(${SCOPES}))*\))?!?: [^ ].*[^.]$"; then
+  fail "résumé non conforme : « ${subject} »"
+fi
+
+if (( $(char_count "${subject}") > MAX_SUBJECT_LENGTH )); then
+  fail "résumé de plus de ${MAX_SUBJECT_LENGTH} caractères"
+fi
+
+if printf '%s' "${subject}" | grep -Eq "^(${TYPES_NEEDING_REFS})[(!:]" \
+    && ! printf '%s\n' "${message}" | grep -Eq '^Refs: P[0-9]+-[0-9]+'; then
+  fail "pied « Refs: <ID> » obligatoire pour ${TYPES_NEEDING_REFS//|/, }"
+fi

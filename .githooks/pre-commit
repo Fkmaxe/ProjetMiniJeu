@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Refuse les fichiers interdits et les secrets évidents, puis vérifie le format — docs/16-git-workflow.md §2 et §5.
+set -euo pipefail
+
+readonly FORBIDDEN_PATHS='(^|/)build/|(^|/)\.gradle/|\.log$|(^|/)\.claude/settings\.local\.json$|^infra/prod/secrets/[^.]'
+readonly SECRET_PATTERNS='-----BEGIN [A-Z ]*PRIVATE KEY-----|PTERO_[A-Z_]*KEY[[:space:]]*[=:][[:space:]]*["'"'"']?[A-Za-z0-9_]{8,}'
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+[[ -z "${staged}" ]] && exit 0
+
+if forbidden="$(printf '%s\n' "${staged}" | grep -E "${FORBIDDEN_PATHS}")"; then
+  echo "pre-commit : fichiers interdits dans le commit (docs/16-git-workflow.md §2) :" >&2
+  printf '  %s\n' ${forbidden} >&2
+  exit 1
+fi
+
+if git diff --cached -U0 --diff-filter=ACMR | grep -E '^\+' | grep -Eq -- "${SECRET_PATTERNS}"; then
+  echo "pre-commit : secret probable dans les lignes ajoutées (passer par les variables masquées ou infra/prod/secrets/)" >&2
+  exit 1
+fi
+
+if printf '%s\n' "${staged}" | grep -q '\.java$'; then
+  ./gradlew spotlessCheck --offline -q || {
+    echo "pre-commit : format non conforme, lancer ./gradlew spotlessApply" >&2
+    exit 1
+  }
+fi
