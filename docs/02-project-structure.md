@@ -45,17 +45,28 @@ pour éviter les conflits avec d'autres plugins. Exception : rien n'est relocali
 
 | Plugin | Applique |
 |---|---|
-| `nexus.java` | toolchain Java 25, `-parameters`, `-Xlint:all -Werror` (hors dépréciations Paper), encodage UTF-8, JUnit 5, AssertJ, JSpecify |
+| `nexus.java` | toolchain Java 25, `-parameters`, `-Xlint:all -Werror` (hors dépréciations Paper), encodage UTF-8, JUnit, AssertJ, JSpecify + tâche `verifyProjectDependencies` (rattachée à `check`) |
 | `nexus.paper-plugin` | `nexus.java` + `paper-api` compileOnly + génération/validation `paper-plugin.yml` + `run-paper` pour test local |
-| `nexus.game` | `nexus.paper-plugin` + `nexus-api` compileOnly + tâche `verifyGameDependencies` (échoue si une autre dépendance projet est ajoutée) |
+| `nexus.game` | `nexus.paper-plugin` + `nexus-api` compileOnly (les dépendances autorisées sont vérifiées par `verifyProjectDependencies`) |
 | `nexus.shadow` | Shadow + relocalisations standard + `minimize()` contrôlé |
 | `nexus.integration-test` | source set `integrationTest` + Testcontainers |
 
-La tâche racine `checkDependencyRules` agrège les vérifications :
-- `games/*` → seulement `:platform:nexus-api` ;
-- `nexus-common` → aucune dépendance projet ;
-- `nexus-data` → seulement `nexus-common` ;
-- aucun module autre que `nexus-core` ne dépend de `nexus-combat`.
+Chaque module exécute `verifyProjectDependencies` (dans `check`) et la tâche racine `checkDependencyRules` les agrège.
+La table des règles est centralisée dans `build-logic/src/main/kotlin/fr/nexus/gradle/DependencyRules.kt` ; un module
+absent de la table fait échouer le build. Sont inspectées les dépendances **déclarées** du code principal
+(`compileClasspath`, `runtimeClasspath`, `annotationProcessor`) ; les suites de test sont libres (un jeu peut utiliser
+`nexus-api-testkit` en test).
+
+| Module | Dépendances projet autorisées |
+|---|---|
+| `nexus-common` | aucune |
+| `nexus-data`, `nexus-api` | `nexus-common` |
+| `nexus-api-testkit`, `nexus-combat`, `nexus-lobby` | `nexus-api` |
+| `nexus-core` | `nexus-api`, `nexus-combat`, `nexus-data`, `nexus-common` |
+| `nexus-proxy`, `nexus-orchestrator` | `nexus-data`, `nexus-common` |
+| `games/*` (tout module `:games:*`) | `nexus-api` **en compileOnly** (interdit au runtime) ; aucune bibliothèque externe hors `paper-api` et `jspecify` apportés par les conventions |
+
+Conséquence : aucun module autre que `nexus-core` ne dépend de `nexus-combat`.
 
 ## 3. Packages
 

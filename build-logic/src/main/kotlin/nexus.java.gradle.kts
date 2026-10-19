@@ -34,3 +34,20 @@ dependencies {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
+
+// Graphe de dépendances entre modules (code principal uniquement, les suites de test sont libres).
+val verifyProjectDependencies = tasks.register<fr.nexus.gradle.VerifyProjectDependencies>("verifyProjectDependencies") {
+    group = "verification"
+    description = "Vérifie les dépendances du module contre docs/02-project-structure.md."
+    val selfPath = project.path
+    val compileConfigurations = listOf("compileClasspath", "annotationProcessor").map { configurations.getByName(it) }
+    val runtimeConfiguration = listOf(configurations.getByName("runtimeClasspath"))
+    projectPath = selfPath
+    compileProjects = provider { fr.nexus.gradle.projectPathsOf(compileConfigurations, selfPath) }
+    runtimeProjects = provider { fr.nexus.gradle.projectPathsOf(runtimeConfiguration, selfPath) }
+    externals = provider { fr.nexus.gradle.externalCoordinatesOf(compileConfigurations + runtimeConfiguration) }
+}
+
+tasks.named("check") {
+    dependsOn(verifyProjectDependencies)
+}
