@@ -6,7 +6,7 @@ Il importe `../gradle/libs.versions.toml` (catalogue `libs`) et embarque les plu
 
 | Plugin (id) | Fichier | Rôle | Livré par P0-01 | Complété par |
 |---|---|---|---|---|
-| `nexus.java` | `src/main/kotlin/nexus.java.gradle.kts` | socle de tout module Java | toolchain Java 25, UTF-8, `-parameters -Xlint:all,-processing -Werror`, JSpecify (`compileOnlyApi`), JUnit 6 + AssertJ ; P0-02 : `verifyProjectDependencies` dans `check` | P0-11 : Spotless, Error Prone + NullAway, Checkstyle (`config/checkstyle/nexus.xml`), JaCoCo |
+| `nexus.java` | `src/main/kotlin/nexus.java.gradle.kts` | socle de tout module Java | toolchain Java 25, UTF-8, `-parameters -Xlint:all,-processing -Werror`, JSpecify (`compileOnlyApi`), JUnit 6 + AssertJ ; P0-02 : `verifyProjectDependencies` dans `check` ; P0-11 : Spotless (palantir), Error Prone + NullAway, Checkstyle (`config/checkstyle/nexus.xml`, code de production), JaCoCo (seuils), `nexus-archrules` en dépendance de test | — |
 | `nexus.paper-plugin` | `nexus.paper-plugin.gradle.kts` | plugin Paper | `nexus.java` + `paper-api` compileOnly + `${version}` injecté dans `paper-plugin.yml` + `runServer` (run-paper, `minecraftVersion`) | validation de `paper-plugin.yml` |
 | `nexus.game` | `nexus.game.gradle.kts` | mini-jeu | `nexus.paper-plugin` + `nexus-api` compileOnly | — (règle « jeu » de `DependencyRules`) |
 | `nexus.shadow` | `nexus.shadow.gradle.kts` | jar shadé | Shadow, jar principal sans classifier (jar brut : `-plain`), relocalisations `fr.nexus.libs.*` (Hikari, Flyway, Lettuce, Netty, Caffeine) | P0-03 : shadow vs loader Paper (ADR-009), Reactor non relocalisé à ce jour |

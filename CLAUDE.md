@@ -51,6 +51,7 @@ nexus/
 ├─ platform/
 │  ├─ nexus-api/            ← API PUBLIQUE pour les jeux (interfaces Paper). Stable, versionnée. (CLAUDE.md dédié)
 │  ├─ nexus-api-testkit/    ← FakeGameContext & outils de test des jeux sans serveur.
+│  ├─ nexus-archrules/      ← règles ArchUnit partagées (ArchitectureTest de chaque module).
 │  ├─ nexus-core/           ← plugin Paper : runtime des instances, joueurs, perms, GUI, admin UI, stats.
 │  ├─ nexus-combat/         ← librairie : PvP legacy 1.8 (calculs purs + listeners), shadée dans core.
 │  └─ nexus-lobby/          ← plugin Paper : lobby, sélecteurs, PNJ, hologrammes de leaderboards.
