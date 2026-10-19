@@ -33,3 +33,14 @@ val installGitHooks = tasks.register<Copy>("installGitHooks") {
 tasks.build {
     dependsOn(installGitHooks)
 }
+
+val testGitHooks = tasks.register<Exec>("testGitHooks") {
+    group = "verification"
+    description = "Vérifie les messages acceptés et refusés par le hook commit-msg."
+    inputs.dir(layout.projectDirectory.dir(".githooks"))
+    commandLine("bash", ".githooks/tests/commit-msg-test.sh")
+}
+
+tasks.check {
+    dependsOn(testGitHooks)
+}
