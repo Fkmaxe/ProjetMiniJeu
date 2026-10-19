@@ -25,6 +25,9 @@ object DependencyRules {
     private const val API = ":platform:nexus-api"
     private const val COMBAT = ":platform:nexus-combat"
 
+    /** Module de test portant les règles ArchUnit partagées, ajouté aux tests de chaque module par nexus.java. */
+    const val ARCH_RULES = ":platform:nexus-archrules"
+
     /** Un jeu ne voit que nexus-api, à la compilation, plus ce qu'apportent les conventions nexus.*. */
     val gameRule = DependencyRule(
         allowedProjects = setOf(API),
@@ -42,6 +45,7 @@ object DependencyRules {
         DATA to DependencyRule(setOf(COMMON)),
         API to DependencyRule(setOf(COMMON)),
         ":platform:nexus-api-testkit" to DependencyRule(setOf(API)),
+        ARCH_RULES to DependencyRule(emptySet()),
         COMBAT to DependencyRule(setOf(API)),
         ":platform:nexus-core" to DependencyRule(setOf(API, COMBAT, DATA, COMMON)),
         ":platform:nexus-lobby" to DependencyRule(setOf(API)),

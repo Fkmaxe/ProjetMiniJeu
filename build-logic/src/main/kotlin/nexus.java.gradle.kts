@@ -65,6 +65,9 @@ dependencies {
     testImplementation(libs.findLibrary("junit-jupiter").get())
     testImplementation(libs.findLibrary("assertj").get())
     testRuntimeOnly(libs.findLibrary("junit-platform-launcher").get())
+    if (project.path != fr.nexus.gradle.DependencyRules.ARCH_RULES) {
+        testImplementation(project(fr.nexus.gradle.DependencyRules.ARCH_RULES))
+    }
 }
 
 tasks.withType<Test>().configureEach {

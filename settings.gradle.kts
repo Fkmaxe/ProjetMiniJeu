@@ -24,6 +24,7 @@ include(
     ":common:nexus-data",
     ":platform:nexus-api",
     ":platform:nexus-api-testkit",
+    ":platform:nexus-archrules",
     ":platform:nexus-combat",
     ":platform:nexus-core",
     ":platform:nexus-lobby",
