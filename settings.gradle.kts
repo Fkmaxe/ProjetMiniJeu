@@ -1,6 +1,5 @@
 // Structure du monorepo Nexus — cf. docs/02-project-structure.md
-// Les dossiers de modules contiennent pour l'instant un README.md ; le build.gradle.kts
-// de chacun est créé par la tâche P0-01.
+// Chaque module applique un plugin de convention de build-logic (cf. build-logic/README.md).
 
 pluginManagement {
     includeBuild("build-logic")
