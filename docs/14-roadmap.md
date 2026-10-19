@@ -30,7 +30,7 @@ Cocher `[x]` dans le même commit que l'implémentation.
 - [x] **P0-11 — Outillage clean code**
   Docs : `15-clean-code.md` §2.
   CA : Spotless (palantir-java-format) + Error Prone + NullAway + Checkstyle (`config/checkstyle/nexus.xml` : méthode ≤ 40 lignes, fichier ≤ 400, ≤ 3 paramètres hors records, imbrication ≤ 3, nombres magiques) + JaCoCo (seuils) appliqués par `nexus.java` ; un test `ArchitectureTest` (ArchUnit) par module avec les règles de §2 ; `./gradlew check` les exécute tous ; un code volontairement fautif fait échouer chaque outil.
-- [ ] **P0-12 — Hooks Git & settings**
+- [x] **P0-12 — Hooks Git & settings**
   Docs : `16-git-workflow.md`.
   CA : tâche `installGitHooks` (copie `.githooks/*` dans `.git/hooks/`, exécutable, dépendance de `build`) ; le hook `commit-msg` rejette un message avec `Co-Authored-By`/lien de session/« Generated with » et accepte un message conforme ; `.claude/settings.json` vérifié (attribution vide) ; aucun commit de l'historique ne contient d'attribution (`git log --format=%B | grep -Ei 'co-authored-by|claude-session|generated with'` vide).
 
