@@ -9,6 +9,7 @@ plugins {
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
     checkstyle
+    jacoco
 }
 
 val libs = the<VersionCatalogsExtension>().named("libs")
@@ -68,6 +69,35 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+// Couverture exigée sur la logique pure (docs/15-clean-code.md §2) ; le reste est mesuré sans seuil.
+val coverageMinimum = "0.80".toBigDecimal()
+val coveredClasses = listOf("*.calc.*", "*.logic.*", "*.Matchmaker", "*.PermissionResolver")
+
+jacoco {
+    toolVersion = libs.findVersion("jacoco").get().requiredVersion
+}
+
+tasks.named<Test>("test") {
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    violationRules {
+        rule {
+            element = "CLASS"
+            includes = coveredClasses
+            limit {
+                counter = "LINE"
+                minimum = coverageMinimum
+            }
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn(tasks.named("jacocoTestCoverageVerification"))
 }
 
 // Graphe de dépendances entre modules (code principal uniquement, les suites de test sont libres).
