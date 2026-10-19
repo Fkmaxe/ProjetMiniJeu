@@ -8,6 +8,7 @@ plugins {
     `java-library`
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
+    checkstyle
 }
 
 val libs = the<VersionCatalogsExtension>().named("libs")
@@ -25,6 +26,17 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+}
+
+checkstyle {
+    toolVersion = libs.findVersion("checkstyle").get().requiredVersion
+    configFile = layout.settingsDirectory.file("config/checkstyle/nexus.xml").asFile
+    maxWarnings = 0
+}
+
+// Règles de conception sur le code de production ; les tests gardent leurs tables de valeurs de référence.
+tasks.withType<Checkstyle>().matching { it.name != "checkstyleMain" }.configureEach {
+    enabled = false
 }
 
 tasks.withType<JavaCompile>().configureEach {
