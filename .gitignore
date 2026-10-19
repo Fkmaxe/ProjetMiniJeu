@@ -1,0 +1,15 @@
+# Build Gradle
+build/
+.gradle/
+run/
+
+# IDE et système
+.idea/
+*.iml
+.DS_Store
+
+# Journaux
+*.log
+
+# Réglages locaux (jamais versionnés)
+.claude/settings.local.json
