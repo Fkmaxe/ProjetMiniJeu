@@ -11,6 +11,7 @@ include(
   ":common:nexus-data",
   ":platform:nexus-api",
   ":platform:nexus-api-testkit",
+  ":platform:nexus-archrules",
   ":platform:nexus-combat",
   ":platform:nexus-core",
   ":platform:nexus-lobby",
@@ -28,6 +29,7 @@ include(
 | `nexus-data` | lib Java pur | `nexus-common`, HikariCP, Flyway, Postgres JDBC, Lettuce, Caffeine | jar (shadé dans les consommateurs, **relocalisé**) |
 | `nexus-api` | lib Paper | `nexus-common`, `paper-api` (compileOnly) | jar publié (Maven local) pour les jeux |
 | `nexus-api-testkit` | lib test | `nexus-api` | `FakeGameContext`, horloge contrôlable, joueurs factices |
+| `nexus-archrules` | lib test | ArchUnit | règles d'architecture partagées, ajoutées aux tests de chaque module par `nexus.java` |
 | `nexus-combat` | lib Paper | `nexus-api`, `paper-api` (compileOnly) | jar (shadé dans core) |
 | `nexus-core` | plugin Paper | `nexus-api`, `nexus-combat`, `nexus-data`, `nexus-common` | `NexusCore-<v>.jar` |
 | `nexus-lobby` | plugin Paper | `nexus-api` + API de service du core exposée via `ServicesManager` (`LobbyBridge`) | `NexusLobby-<v>.jar` |
@@ -59,7 +61,7 @@ absent de la table fait échouer le build. Sont inspectées les dépendances **d
 
 | Module | Dépendances projet autorisées |
 |---|---|
-| `nexus-common` | aucune |
+| `nexus-common`, `nexus-archrules` | aucune |
 | `nexus-data`, `nexus-api` | `nexus-common` |
 | `nexus-api-testkit`, `nexus-combat`, `nexus-lobby` | `nexus-api` |
 | `nexus-core` | `nexus-api`, `nexus-combat`, `nexus-data`, `nexus-common` |

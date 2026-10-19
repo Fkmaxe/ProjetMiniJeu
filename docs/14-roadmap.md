@@ -27,7 +27,7 @@ Cocher `[x]` dans le même commit que l'implémentation.
 - [ ] **P0-08 — Spike S3 knockback** → noté dans `10-pvp-legacy.md`.
 - [ ] **P0-09 — Spike S4 chargement de monde** (copie tmpfs vs slime) : mesure du temps main thread pour une map Bedwars 4 équipes → ADR-004 complété.
 - [ ] **P0-10 — CI** : workflow build + `check` + integrationTest + artefacts ; la CI rejoue aussi le contrôle d'attribution du hook `commit-msg` sur tous les commits de la PR.
-- [ ] **P0-11 — Outillage clean code**
+- [x] **P0-11 — Outillage clean code**
   Docs : `15-clean-code.md` §2.
   CA : Spotless (palantir-java-format) + Error Prone + NullAway + Checkstyle (`config/checkstyle/nexus.xml` : méthode ≤ 40 lignes, fichier ≤ 400, ≤ 3 paramètres hors records, imbrication ≤ 3, nombres magiques) + JaCoCo (seuils) appliqués par `nexus.java` ; un test `ArchitectureTest` (ArchUnit) par module avec les règles de §2 ; `./gradlew check` les exécute tous ; un code volontairement fautif fait échouer chaque outil.
 - [ ] **P0-12 — Hooks Git & settings**

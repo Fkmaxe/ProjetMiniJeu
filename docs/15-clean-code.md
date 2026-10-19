@@ -60,10 +60,10 @@ Laisser chaque fichier touché un peu plus propre — **dans le périmètre de l
 | Outil | Rôle | Échoue le build si |
 |---|---|---|
 | **Spotless** + `palantir-java-format` | formatage unique, imports triés, fin de ligne | `spotlessCheck` échoue (corriger avec `./gradlew spotlessApply`) |
-| **Error Prone** + **NullAway** | bugs courants, nullabilité JSpecify | toute erreur ; warnings Error Prone = erreurs dans `common/` et `platform/nexus-api` |
-| **Checkstyle** (config `config/checkstyle/nexus.xml`) | longueur de méthode (40), de fichier (400), nb de paramètres (3, records exclus), profondeur d'imbrication (3), nombres magiques, imports étoile, nommage | toute violation |
-| **ArchUnit** (tests `ArchitectureTest` par module) | architecture : couches, pas d'import core dans les jeux, pas de `Bukkit.*` dans `logic/` et `calc/`, pas de JDBC hors `nexus-data`, nommage des suffixes (`*Repository` dans `repo`), pas de cycles entre packages | test rouge |
-| **JaCoCo** | couverture | < 80 % sur `calc/`, `logic/`, `Matchmaker`, `PermissionResolver` |
+| **Error Prone** + **NullAway** | bugs courants, nullabilité JSpecify (`@NullMarked` par package, mode JSpecify) | toute erreur ; avec `-Werror`, les warnings Error Prone sont des erreurs dans **tous** les modules |
+| **Checkstyle** (config `config/checkstyle/nexus.xml`) | longueur de méthode (40), de fichier (400), nb de paramètres (3, records exclus), profondeur d'imbrication (3), nombres magiques, imports étoile, nommage — sur le code de **production** (les tests portent des tables de référence) | toute violation |
+| **ArchUnit** (tests `ArchitectureTest` par module, règles partagées dans `platform/nexus-archrules` : `NexusArchRules`, `GameArchRules`) | architecture : couches, pas d'import core dans les jeux, pas de `Bukkit.*` dans `logic/` et `calc/`, pas de JDBC hors `nexus-data`, nommage des suffixes (`*Repository` dans `repo`), pas de cycles entre packages | test rouge |
+| **JaCoCo** | couverture | < 80 % des lignes sur `calc/`, `logic/`, `Matchmaker`, `PermissionResolver` (seuil évalué quand le module a des tests exécutés) |
 | `checkDependencyRules` | dépendances entre modules Gradle | règle violée |
 | `checkI18n` | clés FR ↔ EN | clé manquante |
 
