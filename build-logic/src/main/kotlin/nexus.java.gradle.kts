@@ -1,8 +1,9 @@
 // Convention de base de tout module Java : toolchain 25, compilation stricte, JUnit + AssertJ, JSpecify.
-// L'outillage qualité (Spotless, Error Prone, NullAway, Checkstyle, JaCoCo) est ajouté par P0-11.
+// Outillage qualité (docs/15-clean-code.md §2) : Spotless, Error Prone + NullAway, Checkstyle, JaCoCo.
 
 plugins {
     `java-library`
+    id("com.diffplug.spotless")
 }
 
 val libs = the<VersionCatalogsExtension>().named("libs")
@@ -10,6 +11,15 @@ val libs = the<VersionCatalogsExtension>().named("libs")
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(libs.findVersion("java").get().requiredVersion)
+    }
+}
+
+spotless {
+    java {
+        target("src/*/java/**/*.java")
+        palantirJavaFormat(libs.findVersion("palantir-format").get().requiredVersion)
+        trimTrailingWhitespace()
+        endWithNewline()
     }
 }
 

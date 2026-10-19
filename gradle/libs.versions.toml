@@ -59,6 +59,7 @@ archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref
 # Plugins Gradle utilisés comme dépendances de build-logic (marqueurs de plugin)
 shadow-gradle-plugin = { module = "com.gradleup.shadow:com.gradleup.shadow.gradle.plugin", version.ref = "shadow" }
 run-paper-gradle-plugin = { module = "xyz.jpenilla.run-paper:xyz.jpenilla.run-paper.gradle.plugin", version.ref = "runpaper" }
+spotless-gradle-plugin = { module = "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin", version.ref = "spotless" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
