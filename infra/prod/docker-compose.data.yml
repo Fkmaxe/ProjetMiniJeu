@@ -1,0 +1,57 @@
+# Services de données Nexus en production — HORS Pterodactyl (VM/LXC dédiée sur le réseau privé).
+# Cf. docs/17-deploiement-pterodactyl.md §2. Remplacer 10.0.0.2 par l'IP privée de la machine.
+name: nexus-data
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nexus
+      POSTGRES_USER: nexus_owner                 # propriétaire du schéma (Flyway / orchestrateur)
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_owner_password
+      NEXUS_APP_PASSWORD: ${NEXUS_APP_PASSWORD:?définir NEXUS_APP_PASSWORD dans infra/prod/.env}
+    secrets: [pg_owner_password]
+    ports: ["10.0.0.2:5432:5432"]                # écoute sur le réseau privé uniquement
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro   # crée nexus_app (DML seulement)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus_owner -d nexus"]
+      interval: 10s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:8
+    restart: unless-stopped
+    command: ["sh", "-c", "exec valkey-server --requirepass \"$$(cat /run/secrets/valkey_password)\" --appendonly no --save ''"]
+    secrets: [valkey_password]
+    ports: ["10.0.0.2:6379:6379"]
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a \"$$(cat /run/secrets/valkey_password)\" ping | grep PONG"]
+      interval: 10s
+      retries: 10
+
+  pg-backup:
+    image: prodrigestivill/postgres-backup-local:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: nexus
+      POSTGRES_USER: nexus_owner
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_owner_password
+      SCHEDULE: "@every 6h"
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 6
+    secrets: [pg_owner_password]
+    volumes: [/srv/nexus/backups/postgres:/backups]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+secrets:
+  pg_owner_password: { file: ./secrets/pg_owner_password }
+  valkey_password:   { file: ./secrets/valkey_password }
+
+volumes:
+  pgdata:

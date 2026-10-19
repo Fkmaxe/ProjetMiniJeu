@@ -1,0 +1,12 @@
+# EXTRAIT à fusionner dans le config/paper-global.yml généré par Paper 26.1.2.
+# Vérifier chaque clé contre la doc Paper au moment de P0-05 (les clés évoluent).
+proxies:
+  velocity:
+    enabled: true
+    online-mode: true
+    secret: '${VELOCITY_SECRET}'   # injecté par le script de démarrage (egg) depuis la variable d'environnement
+chunk-system:
+  io-threads: 2
+  worker-threads: 2
+messages:
+  no-permission: '<red>Tu n''as pas la permission.'

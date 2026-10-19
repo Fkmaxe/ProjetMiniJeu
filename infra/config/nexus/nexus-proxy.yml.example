@@ -1,0 +1,15 @@
+# plugins/nexus-proxy/nexus-proxy.yml (Velocity)
+proxy:
+  id: ${NEXUS_PROXY_ID}                  # ex. proxy-1
+database:
+  url: ${NEXUS_DB_URL}
+  user: ${NEXUS_DB_USER}
+  password: ${NEXUS_DB_PASSWORD}
+  pool-size: 4
+redis:
+  url: ${NEXUS_REDIS_URL}
+  key-prefix: "nexus:"
+routing:
+  lobby-prefix: lobby-                   # serveurs de type lobby annoncés par le registre
+  maintenance: false
+  maintenance-bypass-permission: nexus.admin.network

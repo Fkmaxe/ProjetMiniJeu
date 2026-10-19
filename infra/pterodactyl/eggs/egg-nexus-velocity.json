@@ -1,0 +1,172 @@
+{
+    "_comment": "Egg Nexus — généré depuis le dépôt (infra/pterodactyl/eggs). Voir docs/17-deploiement-pterodactyl.md",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-19T00:00:00+02:00",
+    "name": "Nexus Velocity (proxy)",
+    "author": "dev@nexus.local",
+    "description": "Proxy Velocity du réseau Nexus avec le plugin nexus-proxy.",
+    "features": [],
+    "docker_images": {
+        "Java 25": "ghcr.io/pterodactyl/yolks:java_25"
+    },
+    "file_denylist": [],
+    "startup": "bash ./nexus-boot.sh",
+    "config": {
+        "files": "{\"velocity.toml\": {\"parser\": \"file\", \"find\": {\"bind\": \"bind = \\\"0.0.0.0:{{server.build.default.port}}\\\"\"}}}",
+        "startup": "{\"done\": \"Done (\"}",
+        "logs": "{}",
+        "stop": "end"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Installation du proxy Velocity Nexus — docs/17-deploiement-pterodactyl.md §3\nset -euo pipefail\napt-get update -qq && apt-get install -y -qq curl jq ca-certificates >/dev/null\nUA=\"nexus-installer/1.0 (${NEXUS_CONTACT})\"\nmkdir -p /mnt/server && cd /mnt/server\nif [ -n \"${VELOCITY_DOWNLOAD_URL}\" ]; then\n  URL=\"${VELOCITY_DOWNLOAD_URL}\"\nelse\n  # API Fill v3 supposée identique à Paper pour le projet velocity — À VÉRIFIER (doc 17 §3)\n  URL=$(curl -fsSL -A \"${UA}\" \"https://fill.papermc.io/v3/projects/velocity/versions/${VELOCITY_VERSION}/builds\" \\\n        | jq -r 'first(.[] | .downloads.\"server:default\".url) // empty')\nfi\n[ -n \"${URL}\" ] || { echo \"Impossible de déterminer l'URL de Velocity : renseigner VELOCITY_DOWNLOAD_URL\"; exit 1; }\ncurl -fsSL -A \"${UA}\" -o \"${SERVER_JARFILE}\" \"${URL}\"\nmkdir -p plugins\n\nif [ -n \"${NEXUS_RELEASE_URL}\" ]; then\n  curl -fsSL -A \"${UA}\" -o nexus-boot.sh \"${NEXUS_RELEASE_URL%/}/${NEXUS_VERSION:-latest}/nexus-boot.sh\"\nfi\n[ -f nexus-boot.sh ] || { echo \"nexus-boot.sh absent : déposer infra/pterodactyl/nexus-boot.sh par SFTP ou définir NEXUS_RELEASE_URL\"; }\nchmod +x nexus-boot.sh 2>/dev/null || true\n\necho \"Installation terminée.\"\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Rôle",
+            "description": "Type de serveur Nexus.",
+            "env_variable": "NEXUS_ROLE",
+            "default_value": "proxy",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|in:proxy",
+            "field_type": "text"
+        },
+        {
+            "name": "Fichier jar",
+            "description": "Jar du serveur (téléchargé à l'installation).",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "velocity.jar",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Version Velocity",
+            "description": "Version Velocity compatible 26.1 (à vérifier sur papermc.io).",
+            "env_variable": "VELOCITY_VERSION",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string|max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "URL directe Velocity",
+            "description": "Prioritaire si renseignée : URL du jar Velocity.",
+            "env_variable": "VELOCITY_DOWNLOAD_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Identifiant proxy",
+            "description": "Identifiant unique du proxy.",
+            "env_variable": "NEXUS_PROXY_ID",
+            "default_value": "proxy-1",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:48",
+            "field_type": "text"
+        },
+        {
+            "name": "Secret Velocity",
+            "description": "Secret de modern forwarding.",
+            "env_variable": "VELOCITY_SECRET",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Version Nexus",
+            "description": "Version des jars Nexus à installer (dossier de release), ex. 0.3.0 ou latest.",
+            "env_variable": "NEXUS_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "URL des releases",
+            "description": "Base HTTP des archives produites par ./gradlew packageRelease. Vide = jars déposés à la main par SFTP.",
+            "env_variable": "NEXUS_RELEASE_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Contact (User-Agent)",
+            "description": "URL ou e-mail de contact transmis aux API de téléchargement (exigé par PaperMC).",
+            "env_variable": "NEXUS_CONTACT",
+            "default_value": "https://example.invalid",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "URL JDBC Postgres",
+            "description": "Base de données (réseau privé).",
+            "env_variable": "NEXUS_DB_URL",
+            "default_value": "jdbc:postgresql://10.0.0.2:5432/nexus",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Utilisateur Postgres",
+            "description": "Utilisateur applicatif (sans droits DDL).",
+            "env_variable": "NEXUS_DB_USER",
+            "default_value": "nexus_app",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Mot de passe Postgres",
+            "description": "Secret.",
+            "env_variable": "NEXUS_DB_PASSWORD",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "URL Redis/Valkey",
+            "description": "Valkey (réseau privé), mot de passe inclus.",
+            "env_variable": "NEXUS_REDIS_URL",
+            "default_value": "redis://:motdepasse@10.0.0.2:6379",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Options JVM supplémentaires",
+            "description": "Ajoutées après les options par défaut de nexus-boot.sh.",
+            "env_variable": "JVM_FLAGS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        }
+    ]
+}

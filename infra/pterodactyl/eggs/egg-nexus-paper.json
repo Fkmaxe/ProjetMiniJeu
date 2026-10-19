@@ -1,0 +1,214 @@
+{
+    "_comment": "Egg Nexus — généré depuis le dépôt (infra/pterodactyl/eggs). Voir docs/17-deploiement-pterodactyl.md",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-19T00:00:00+02:00",
+    "name": "Nexus Paper (lobby / game / editor)",
+    "author": "dev@nexus.local",
+    "description": "Serveur Paper 26.1.x du réseau Nexus. Le rôle (lobby, game, editor) choisit l'archive de plugins installée par nexus-boot.sh.",
+    "features": [
+        "eula"
+    ],
+    "docker_images": {
+        "Java 25": "ghcr.io/pterodactyl/yolks:java_25"
+    },
+    "file_denylist": [],
+    "startup": "bash ./nexus-boot.sh",
+    "config": {
+        "files": "{\"server.properties\": {\"parser\": \"properties\", \"find\": {\"server-ip\": \"0.0.0.0\", \"server-port\": \"{{server.build.default.port}}\", \"query.port\": \"{{server.build.default.port}}\", \"online-mode\": \"false\"}}}",
+        "startup": "{\"done\": \")! For help, type \"}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Installation d'un serveur Paper Nexus — docs/17-deploiement-pterodactyl.md §3\nset -euo pipefail\napt-get update -qq && apt-get install -y -qq curl jq ca-certificates >/dev/null\nUA=\"nexus-installer/1.0 (${NEXUS_CONTACT})\"\nmkdir -p /mnt/server && cd /mnt/server\nAPI=\"https://fill.papermc.io/v3/projects/paper/versions/${MINECRAFT_VERSION}/builds\"\nif [ \"${PAPER_BUILD}\" = \"latest\" ]; then\n  URL=$(curl -fsSL -A \"${UA}\" \"${API}\" | jq -r 'first(.[] | select(.channel == \"STABLE\") | .downloads.\"server:default\".url) // empty')\nelse\n  URL=$(curl -fsSL -A \"${UA}\" \"${API}/${PAPER_BUILD}\" | jq -r '.downloads.\"server:default\".url // empty')\nfi\n[ -n \"${URL}\" ] || { echo \"Aucun build Paper STABLE trouvé pour ${MINECRAFT_VERSION}\"; exit 1; }\necho \"Paper : ${URL}\"\ncurl -fsSL -A \"${UA}\" -o \"${SERVER_JARFILE}\" \"${URL}\"\necho \"eula=true\" > eula.txt\nmkdir -p plugins config\n\nif [ -n \"${NEXUS_RELEASE_URL}\" ]; then\n  curl -fsSL -A \"${UA}\" -o nexus-boot.sh \"${NEXUS_RELEASE_URL%/}/${NEXUS_VERSION:-latest}/nexus-boot.sh\"\nfi\n[ -f nexus-boot.sh ] || { echo \"nexus-boot.sh absent : déposer infra/pterodactyl/nexus-boot.sh par SFTP ou définir NEXUS_RELEASE_URL\"; }\nchmod +x nexus-boot.sh 2>/dev/null || true\n\necho \"Installation terminée.\"\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Rôle",
+            "description": "Type de serveur Nexus.",
+            "env_variable": "NEXUS_ROLE",
+            "default_value": "game",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|in:lobby,game,editor",
+            "field_type": "text"
+        },
+        {
+            "name": "Fichier jar",
+            "description": "Jar du serveur (téléchargé à l'installation).",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Version Minecraft",
+            "description": "Version Paper/Minecraft (doit correspondre à gradle.properties).",
+            "env_variable": "MINECRAFT_VERSION",
+            "default_value": "26.1.2",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:16",
+            "field_type": "text"
+        },
+        {
+            "name": "Build Paper",
+            "description": "Numéro de build Paper ou latest (dernier STABLE). Réinstaller pour mettre à jour.",
+            "env_variable": "PAPER_BUILD",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:16",
+            "field_type": "text"
+        },
+        {
+            "name": "Identifiant serveur",
+            "description": "Identifiant unique sur le réseau, ex. game-3. Pour le pool de scaling : nexus-game-<n> (= external_id).",
+            "env_variable": "NEXUS_SERVER_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:48",
+            "field_type": "text"
+        },
+        {
+            "name": "Secret Velocity",
+            "description": "Secret de modern forwarding (identique sur proxy et backends).",
+            "env_variable": "VELOCITY_SECRET",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Hôte annoncé",
+            "description": "IP privée par laquelle Velocity joint ce serveur. Vide = IP de l'allocation.",
+            "env_variable": "NEXUS_ADVERTISED_HOST",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|ip",
+            "field_type": "text"
+        },
+        {
+            "name": "Dossier des templates",
+            "description": "Point de montage (Mount Pterodactyl) des templates de maps.",
+            "env_variable": "NEXUS_TEMPLATES_DIR",
+            "default_value": "/mnt/nexus-templates",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Dossier des instances",
+            "description": "Mondes d'instance (tmpfs monté recommandé). Vide = worlds/instances sur disque.",
+            "env_variable": "NEXUS_INSTANCES_DIR",
+            "default_value": "/mnt/nexus-tmpfs",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Instances max",
+            "description": "Serveurs de jeu : nombre max d'instances simultanées.",
+            "env_variable": "NEXUS_MAX_INSTANCES",
+            "default_value": "6",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|integer|between:1,32",
+            "field_type": "text"
+        },
+        {
+            "name": "Version Nexus",
+            "description": "Version des jars Nexus à installer (dossier de release), ex. 0.3.0 ou latest.",
+            "env_variable": "NEXUS_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "URL des releases",
+            "description": "Base HTTP des archives produites par ./gradlew packageRelease. Vide = jars déposés à la main par SFTP.",
+            "env_variable": "NEXUS_RELEASE_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Contact (User-Agent)",
+            "description": "URL ou e-mail de contact transmis aux API de téléchargement (exigé par PaperMC).",
+            "env_variable": "NEXUS_CONTACT",
+            "default_value": "https://example.invalid",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "URL JDBC Postgres",
+            "description": "Base de données (réseau privé).",
+            "env_variable": "NEXUS_DB_URL",
+            "default_value": "jdbc:postgresql://10.0.0.2:5432/nexus",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Utilisateur Postgres",
+            "description": "Utilisateur applicatif (sans droits DDL).",
+            "env_variable": "NEXUS_DB_USER",
+            "default_value": "nexus_app",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Mot de passe Postgres",
+            "description": "Secret.",
+            "env_variable": "NEXUS_DB_PASSWORD",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "URL Redis/Valkey",
+            "description": "Valkey (réseau privé), mot de passe inclus.",
+            "env_variable": "NEXUS_REDIS_URL",
+            "default_value": "redis://:motdepasse@10.0.0.2:6379",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Options JVM supplémentaires",
+            "description": "Ajoutées après les options par défaut de nexus-boot.sh.",
+            "env_variable": "JVM_FLAGS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        }
+    ]
+}

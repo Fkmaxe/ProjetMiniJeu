@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  Règles Nexus — miroir de docs/15-clean-code.md.
+  Le formatage (indentation, accolades, imports) est géré par Spotless : Checkstyle ne vérifie ici
+  que la conception (tailles, complexité, nombres magiques, nommage, mauvaises pratiques).
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- Suppression ciblée possible : @SuppressWarnings("checkstyle:MagicNumber") avec justification en commentaire -->
+    <module name="SuppressWarningsFilter"/>
+
+    <!-- Classe <= 400 lignes -->
+    <module name="FileLength">
+        <property name="max" value="400"/>
+    </module>
+
+    <module name="TreeWalker">
+        <module name="SuppressWarningsHolder"/>
+
+        <!-- Taille & complexité -->
+        <module name="MethodLength">
+            <property name="max" value="40"/>
+            <property name="countEmpty" value="false"/>
+        </module>
+        <module name="ParameterNumber">
+            <property name="max" value="3"/>
+            <property name="ignoreOverriddenMethods" value="true"/>
+            <property name="tokens" value="METHOD_DEF"/>
+        </module>
+        <module name="RecordComponentNumber">
+            <property name="max" value="16"/>
+        </module>
+        <module name="NestedIfDepth">
+            <property name="max" value="2"/>
+        </module>
+        <module name="NestedForDepth">
+            <property name="max" value="2"/>
+        </module>
+        <module name="NestedTryDepth">
+            <property name="max" value="1"/>
+        </module>
+        <module name="CyclomaticComplexity">
+            <property name="max" value="10"/>
+            <property name="switchBlockAsSingleDecisionPoint" value="true"/>
+        </module>
+        <module name="BooleanExpressionComplexity">
+            <property name="max" value="3"/>
+        </module>
+        <module name="ReturnCount">
+            <property name="max" value="4"/>
+            <property name="maxForVoid" value="3"/>
+        </module>
+
+        <!-- Valeurs magiques -->
+        <module name="MagicNumber">
+            <property name="ignoreNumbers" value="-1, 0, 1, 2"/>
+            <property name="ignoreHashCodeMethod" value="true"/>
+            <property name="ignoreAnnotation" value="true"/>
+            <property name="ignoreFieldDeclaration" value="true"/>
+        </module>
+
+        <!-- Nommage -->
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="MemberName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+        <module name="ConstantName"/>
+        <module name="StaticVariableName"/>
+        <module name="PackageName">
+            <property name="format" value="^fr\.nexus(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+        <module name="AbbreviationAsWordInName">
+            <property name="allowedAbbreviationLength" value="1"/>
+            <property name="ignoreFinal" value="false"/>
+        </module>
+
+        <!-- Mauvaises pratiques -->
+        <module name="AvoidStarImport"/>
+        <module name="EmptyCatchBlock"/>
+        <module name="EmptyBlock">
+            <property name="option" value="TEXT"/>
+        </module>
+        <module name="IllegalCatch">
+            <!-- catch (Exception) autorisé seulement aux frontières : supprimer avec justification -->
+        </module>
+        <module name="IllegalThrows"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="FallThrough"/>
+        <module name="EqualsHashCode"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="OneStatementPerLine"/>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="ModifiedControlVariable"/>
+        <module name="HiddenField">
+            <property name="ignoreConstructorParameter" value="true"/>
+            <property name="ignoreSetter" value="true"/>
+            <property name="ignoreFormat" value="^$"/>
+            <property name="tokens" value="VARIABLE_DEF"/>
+        </module>
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="false"/>
+            <property name="allowPublicFinalFields" value="false"/>
+        </module>
+        <module name="FinalClass"/>
+        <module name="HideUtilityClassConstructor"/>
+
+        <!-- Interdits du projet -->
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="System\.(out|err)\.print"/>
+            <property name="message" value="Utiliser le logger du plugin, jamais System.out/err (docs/13-coding-standards.md §4)."/>
+            <property name="ignoreComments" value="true"/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="Thread\.sleep\("/>
+            <property name="message" value="Thread.sleep interdit : utiliser NexusScheduler (CLAUDE.md règle 4)."/>
+            <property name="ignoreComments" value="true"/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="import (net\.minecraft|org\.bukkit\.craftbukkit)\."/>
+            <property name="message" value="NMS / CraftBukkit interdits (ADR-006)."/>
+        </module>
+        <module name="TodoComment">
+            <property name="format" value="(TODO|FIXME)(?!\(P\d+-\d+\))"/>
+            <message key="todo.match" value="TODO/FIXME doivent référencer une tâche : TODO(P3-06): ..."/>
+        </module>
+    </module>
+</module>

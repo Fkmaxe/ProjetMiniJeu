@@ -1,0 +1,212 @@
+{
+    "_comment": "Egg Nexus — généré depuis le dépôt (infra/pterodactyl/eggs). Voir docs/17-deploiement-pterodactyl.md",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-19T00:00:00+02:00",
+    "name": "Nexus Orchestrator",
+    "author": "dev@nexus.local",
+    "description": "Service d'orchestration Nexus (files, instances, scaling Pterodactyl, migrations).",
+    "features": [],
+    "docker_images": {
+        "Java 25": "ghcr.io/pterodactyl/yolks:java_25"
+    },
+    "file_denylist": [],
+    "startup": "bash ./nexus-boot.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\"done\": \"Nexus orchestrator ready\"}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Installation de l'orchestrateur Nexus — docs/17-deploiement-pterodactyl.md §3\nset -euo pipefail\napt-get update -qq && apt-get install -y -qq curl ca-certificates >/dev/null\nUA=\"nexus-installer/1.0 (${NEXUS_CONTACT})\"\nmkdir -p /mnt/server/app && cd /mnt/server\n\nif [ -n \"${NEXUS_RELEASE_URL}\" ]; then\n  curl -fsSL -A \"${UA}\" -o nexus-boot.sh \"${NEXUS_RELEASE_URL%/}/${NEXUS_VERSION:-latest}/nexus-boot.sh\"\nfi\n[ -f nexus-boot.sh ] || { echo \"nexus-boot.sh absent : déposer infra/pterodactyl/nexus-boot.sh par SFTP ou définir NEXUS_RELEASE_URL\"; }\nchmod +x nexus-boot.sh 2>/dev/null || true\n\necho \"Le jar de l'orchestrateur est installé au premier démarrage par nexus-boot.sh (archive nexus-orchestrator).\"\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Rôle",
+            "description": "Type de serveur Nexus.",
+            "env_variable": "NEXUS_ROLE",
+            "default_value": "orchestrator",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|in:orchestrator",
+            "field_type": "text"
+        },
+        {
+            "name": "Fichier jar",
+            "description": "Jar du serveur (téléchargé à l'installation).",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "app/nexus-orchestrator.jar",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Identifiant orchestrateur",
+            "description": "Deux orchestrateurs max (leader + standby).",
+            "env_variable": "NEXUS_ORCHESTRATOR_ID",
+            "default_value": "orchestrator-1",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:48",
+            "field_type": "text"
+        },
+        {
+            "name": "Utilisateur Postgres (migrations)",
+            "description": "Utilisateur avec droits DDL pour Flyway.",
+            "env_variable": "NEXUS_DB_MIGRATION_USER",
+            "default_value": "nexus_owner",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Mot de passe Postgres (migrations)",
+            "description": "Secret.",
+            "env_variable": "NEXUS_DB_MIGRATION_PASSWORD",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Port métriques",
+            "description": "Port HTTP /metrics (allocation secondaire ou réseau privé).",
+            "env_variable": "NEXUS_METRICS_PORT",
+            "default_value": "9100",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|integer|between:1024,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Provider de scaling",
+            "description": "static | pterodactyl.",
+            "env_variable": "NEXUS_SCALING_PROVIDER",
+            "default_value": "pterodactyl",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|in:static,pterodactyl",
+            "field_type": "text"
+        },
+        {
+            "name": "URL du panel",
+            "description": "URL du panel Pterodactyl.",
+            "env_variable": "PTERO_PANEL_URL",
+            "default_value": "https://panel.example.com",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Clé API application",
+            "description": "Clé ptla_… (lecture serveurs/nœuds/allocations ; écriture serveurs en mode create).",
+            "env_variable": "PTERO_APPLICATION_KEY",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Clé API client",
+            "description": "Clé ptlc_… d'un compte technique ayant accès aux serveurs du pool (démarrer/arrêter).",
+            "env_variable": "PTERO_CLIENT_KEY",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Version Nexus",
+            "description": "Version des jars Nexus à installer (dossier de release), ex. 0.3.0 ou latest.",
+            "env_variable": "NEXUS_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "URL des releases",
+            "description": "Base HTTP des archives produites par ./gradlew packageRelease. Vide = jars déposés à la main par SFTP.",
+            "env_variable": "NEXUS_RELEASE_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Contact (User-Agent)",
+            "description": "URL ou e-mail de contact transmis aux API de téléchargement (exigé par PaperMC).",
+            "env_variable": "NEXUS_CONTACT",
+            "default_value": "https://example.invalid",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "URL JDBC Postgres",
+            "description": "Base de données (réseau privé).",
+            "env_variable": "NEXUS_DB_URL",
+            "default_value": "jdbc:postgresql://10.0.0.2:5432/nexus",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Utilisateur Postgres",
+            "description": "Utilisateur applicatif (sans droits DDL).",
+            "env_variable": "NEXUS_DB_USER",
+            "default_value": "nexus_app",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Mot de passe Postgres",
+            "description": "Secret.",
+            "env_variable": "NEXUS_DB_PASSWORD",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "URL Redis/Valkey",
+            "description": "Valkey (réseau privé), mot de passe inclus.",
+            "env_variable": "NEXUS_REDIS_URL",
+            "default_value": "redis://:motdepasse@10.0.0.2:6379",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Options JVM supplémentaires",
+            "description": "Ajoutées après les options par défaut de nexus-boot.sh.",
+            "env_variable": "JVM_FLAGS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        }
+    ]
+}

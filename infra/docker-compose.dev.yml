@@ -1,0 +1,121 @@
+# Réseau Nexus complet pour le développement local.
+# Prérequis : ./gradlew build collectJars  (dépose les jars dans build/dist/<type>/)
+# Images : vérifier au P0-04 les tags supportant Java 25 / Paper 26.1.2 (itzg publie des tags javaXX).
+
+name: nexus-dev
+
+x-paper-common: &paper-common
+  image: itzg/minecraft-server:java25        # À VÉRIFIER : tag Java 25
+  environment: &paper-env
+    EULA: "TRUE"
+    TYPE: PAPER
+    VERSION: "26.1.2"
+    MEMORY: "3G"
+    ONLINE_MODE: "FALSE"
+    USE_AIKAR_FLAGS: "TRUE"
+    JVM_XX_OPTS: "-XX:+UseCompactObjectHeaders"
+    NEXUS_DB_URL: jdbc:postgresql://postgres:5432/nexus
+    NEXUS_DB_USER: nexus
+    NEXUS_DB_PASSWORD: nexus
+    NEXUS_REDIS_URL: redis://:nexus@valkey:6379
+    VELOCITY_SECRET: dev-secret-change-me
+  depends_on:
+    postgres: { condition: service_healthy }
+    valkey: { condition: service_healthy }
+    orchestrator: { condition: service_started }
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: nexus
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: nexus
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus"]
+      interval: 3s
+      retries: 20
+
+  valkey:
+    image: valkey/valkey:8
+    command: ["valkey-server", "--requirepass", "nexus", "--save", ""]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "nexus", "ping"]
+      interval: 3s
+      retries: 20
+
+  orchestrator:
+    image: eclipse-temurin:25-jre
+    command: ["java", "-jar", "/app/nexus-orchestrator.jar"]
+    working_dir: /app
+    environment:
+      NEXUS_DB_URL: jdbc:postgresql://postgres:5432/nexus
+      NEXUS_DB_USER: nexus
+      NEXUS_DB_PASSWORD: nexus
+      NEXUS_REDIS_URL: redis://:nexus@valkey:6379
+      NEXUS_SCALING_PROVIDER: static
+    volumes:
+      - ../build/dist/orchestrator:/app
+    ports: ["9100:9100"]   # /metrics
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+
+  velocity:
+    image: itzg/mc-proxy
+    environment:
+      TYPE: VELOCITY
+      MEMORY: "512m"
+      NEXUS_DB_URL: jdbc:postgresql://postgres:5432/nexus
+      NEXUS_DB_USER: nexus
+      NEXUS_DB_PASSWORD: nexus
+      NEXUS_REDIS_URL: redis://:nexus@valkey:6379
+    ports: ["25565:25577"]
+    volumes:
+      - ../build/dist/proxy:/plugins
+      - ./config/velocity.toml:/config/velocity.toml:ro
+      - ./config/forwarding.secret:/config/forwarding.secret:ro
+    depends_on: [lobby-1]
+
+  lobby-1:
+    <<: *paper-common
+    environment:
+      <<: *paper-env
+      NEXUS_SERVER_ID: lobby-1
+      NEXUS_SERVER_TYPE: lobby
+    volumes:
+      - ../build/dist/lobby:/plugins
+      - ./config/paper:/config:ro
+
+  game-1:
+    <<: *paper-common
+    environment:
+      <<: *paper-env
+      NEXUS_SERVER_ID: game-1
+      NEXUS_SERVER_TYPE: game
+      MEMORY: "4G"
+    volumes:
+      - ../build/dist/game:/plugins
+      - ./config/paper:/config:ro
+      - templates:/data/templates
+    tmpfs:
+      - /data/worlds/instances:size=2g
+
+  editor:
+    <<: *paper-common
+    environment:
+      <<: *paper-env
+      NEXUS_SERVER_ID: editor
+      NEXUS_SERVER_TYPE: editor
+    volumes:
+      - ../build/dist/editor:/plugins
+      - ./config/paper:/config:ro
+      - templates:/data/templates
+      - ./editor-imports:/data/imports
+
+volumes:
+  pgdata:
+  templates:     # stockage des templates de maps partagé editor ↔ game (remplaçable par S3/MinIO)

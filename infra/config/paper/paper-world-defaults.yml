@@ -1,0 +1,18 @@
+# EXTRAIT à fusionner dans config/paper-world-defaults.yml — vérifier au P0-05.
+chunks:
+  auto-save-interval: -1
+entities:
+  spawning:
+    per-player-mob-spawns: true
+  behavior:
+    disable-chest-cat-detection: true
+environment:
+  optimize-explosions: true
+  treasure-maps:
+    enabled: false
+misc:
+  redstone-implementation: ALTERNATE_CURRENT
+hopper:
+  disable-move-event: true
+collisions:
+  max-entity-collisions: 2

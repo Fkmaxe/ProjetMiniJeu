@@ -1,0 +1,63 @@
+# Catalogue de versions — VÉRIFIER chaque version au moment du bootstrap (tâche P0-01)
+# et figer la dernière stable compatible. Les valeurs ci-dessous sont des points de départ.
+
+[versions]
+java = "25"
+paper = "26.1.2.build.66-stable"     # format Paper 26.x : <mc>.build.<n>-stable — prendre le dernier build stable 26.1.2
+velocity = "4.3.0"                   # À VÉRIFIER : papermc.io affichait Velocity 4.3.0 le 19/10/2026 — prendre la velocity-api exacte publiée pour ce build
+hikari = "6.3.0"
+flyway = "11.10.0"
+postgres = "42.7.7"
+lettuce = "6.7.1.RELEASE"
+caffeine = "3.2.1"
+gson = "2.13.1"
+jspecify = "1.0.0"
+junit = "5.13.1"
+assertj = "3.27.3"
+testcontainers = "1.21.3"
+dockerjava = "3.5.3"
+slf4j = "2.0.17"
+logback = "1.5.18"
+shadow = "9.0.0"
+runpaper = "2.3.1"
+# Qualité (P0-11) — À VÉRIFIER
+spotless = "7.2.1"
+palantir-format = "2.71.0"
+errorprone-plugin = "4.3.0"
+errorprone = "2.41.0"
+nullaway = "0.12.9"
+checkstyle = "11.0.0"
+archunit = "1.4.1"
+jacoco = "0.8.13"
+
+[libraries]
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgres = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-postgres = { module = "org.testcontainers:postgresql" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter" }
+dockerjava-core = { module = "com.github.docker-java:docker-java-core", version.ref = "dockerjava" }
+dockerjava-httpclient5 = { module = "com.github.docker-java:docker-java-transport-httpclient5", version.ref = "dockerjava" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "runpaper" }
+run-velocity = { id = "xyz.jpenilla.run-velocity", version.ref = "runpaper" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone-plugin" }

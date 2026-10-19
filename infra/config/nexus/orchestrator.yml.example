@@ -1,0 +1,34 @@
+# orchestrator.yml — service nexus-orchestrator
+id: ${NEXUS_ORCHESTRATOR_ID}             # ex. orchestrator-1
+database:
+  url: ${NEXUS_DB_URL}
+  user: ${NEXUS_DB_MIGRATION_USER}       # utilisateur avec droits DDL (Flyway)
+  password: ${NEXUS_DB_MIGRATION_PASSWORD}
+  pool-size: 16
+redis:
+  url: ${NEXUS_REDIS_URL}
+  key-prefix: "nexus:"
+metrics:
+  port: ${NEXUS_METRICS_PORT}            # Prometheus /metrics
+scaling:
+  provider: ${NEXUS_SCALING_PROVIDER}    # static | pterodactyl | docker
+  pterodactyl:                            # cf. docs/17-deploiement-pterodactyl.md §6
+    panel-url: ${PTERO_PANEL_URL}
+    application-key: ${PTERO_APPLICATION_KEY}   # ptla_… (secret)
+    client-key: ${PTERO_CLIENT_KEY}             # ptlc_… (secret)
+    mode: pool                                   # pool (recommandé) | create
+    pool:
+      tag-prefix: "nexus-game-"                  # external_id des serveurs du pool
+      min-running: 1
+      idle-shutdown-minutes: 15
+    create:
+      egg-id: 0
+      node-id: 0
+      owner-user-id: 1
+      allocation-ip: 10.0.0.10                   # IP privée du nœud
+      memory-mb: 6144
+      disk-mb: 8192
+      cpu-percent: 400
+policies:
+  reconcile-interval-ms: 500
+  default-countdown-seconds: 30

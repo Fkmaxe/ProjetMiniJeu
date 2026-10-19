@@ -1,0 +1,23 @@
+# plugins/NexusCore/nexus.yml — chaque clé peut être remplacée par une variable d'environnement (prioritaire).
+server:
+  id: ${NEXUS_SERVER_ID}                 # ex. game-3 ; unique sur le réseau
+  type: ${NEXUS_SERVER_TYPE}             # lobby | game | editor
+  advertised-host: ${NEXUS_ADVERTISED_HOST}   # IP privée joignable par Velocity (Pterodactyl : IP de l'allocation)
+  advertised-port: ${NEXUS_ADVERTISED_PORT}   # Pterodactyl : ${SERVER_PORT}
+  max-instances: 6                       # serveurs de jeu uniquement
+database:
+  url: ${NEXUS_DB_URL}
+  user: ${NEXUS_DB_USER}
+  password: ${NEXUS_DB_PASSWORD}
+  pool-size: 6
+redis:
+  url: ${NEXUS_REDIS_URL}
+  key-prefix: "nexus:"
+templates:
+  storage: ${NEXUS_TEMPLATES_DIR}        # Pterodactyl : point de montage (Mount) partagé, ex. /mnt/nexus-templates
+  cache-dir: cache/templates
+instances:
+  worlds-dir: ${NEXUS_INSTANCES_DIR}     # idéalement un tmpfs monté ; défaut : worlds/instances
+locale:
+  default: fr_FR
+debug: []                                # [instance, queue, combat]

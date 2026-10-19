@@ -1,0 +1,16 @@
+# Extrait minimal — compléter au P0-05 à partir du velocity.toml par défaut de la version utilisée.
+config-version = "2.7"
+bind = "0.0.0.0:25577"
+motd = "<gradient:#4dabf7:#9775fa>Nexus</gradient> <gray>— mini-jeux"
+show-max-players = 500
+online-mode = true
+player-info-forwarding-mode = "modern"
+forwarding-secret-file = "forwarding.secret"
+
+[servers]
+# Seul le lobby est déclaré statiquement (repli). Les autres serveurs sont enregistrés
+# dynamiquement par nexus-proxy à partir du registre Redis.
+lobby-1 = "lobby-1:25565"
+try = ["lobby-1"]
+
+[forced-hosts]
