@@ -9,7 +9,7 @@ Cocher `[x]` dans le même commit que l'implémentation.
 
 ## P0 — Fondations & spikes
 
-- [ ] **P0-01 — Monorepo Gradle**
+- [x] **P0-01 — Monorepo Gradle**
   Docs : `02-project-structure.md`, `CLAUDE.md`.
   CA : `settings.gradle.kts` avec tous les modules (vides compilables) ; `build-logic` avec les 5 plugins de convention ; `libs.versions.toml` vérifié et figé sur les dernières versions stables (Paper 26.1.2, Velocity compatible 26.1, libs) ; toolchain Java 25 ; `./gradlew build` vert.
 - [ ] **P0-02 — Règles de dépendance**
