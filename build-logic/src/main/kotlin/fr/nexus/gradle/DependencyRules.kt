@@ -25,10 +25,15 @@ object DependencyRules {
     private const val API = ":platform:nexus-api"
     private const val COMBAT = ":platform:nexus-combat"
 
-    /** Un jeu ne voit que nexus-api, à la compilation, plus ce qu'apportent les conventions nexus.paper-plugin. */
+    /** Un jeu ne voit que nexus-api, à la compilation, plus ce qu'apportent les conventions nexus.*. */
     val gameRule = DependencyRule(
         allowedProjects = setOf(API),
-        allowedExternals = setOf("io.papermc.paper:paper-api", "org.jspecify:jspecify"),
+        allowedExternals = setOf(
+            "io.papermc.paper:paper-api",
+            "org.jspecify:jspecify",
+            "com.google.errorprone:error_prone_core",
+            "com.uber.nullaway:nullaway",
+        ),
         compileOnlyProjects = true,
     )
 

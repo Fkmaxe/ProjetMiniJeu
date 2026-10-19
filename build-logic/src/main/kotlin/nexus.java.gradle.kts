@@ -1,9 +1,13 @@
 // Convention de base de tout module Java : toolchain 25, compilation stricte, JUnit + AssertJ, JSpecify.
 // Outillage qualité (docs/15-clean-code.md §2) : Spotless, Error Prone + NullAway, Checkstyle, JaCoCo.
 
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
+
 plugins {
     `java-library`
     id("com.diffplug.spotless")
+    id("net.ltgt.errorprone")
 }
 
 val libs = the<VersionCatalogsExtension>().named("libs")
@@ -25,7 +29,14 @@ spotless {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+    // -Werror rend aussi bloquants les avertissements Error Prone, dans tous les modules.
     options.compilerArgs.addAll(listOf("-parameters", "-Xlint:all,-processing", "-Werror"))
+    options.errorprone {
+        disableWarningsInGeneratedCode = true
+        check("NullAway", CheckSeverity.ERROR)
+        option("NullAway:OnlyNullMarked", "true")
+        option("NullAway:JSpecifyMode", "true")
+    }
 }
 
 tasks.withType<Javadoc>().configureEach {
@@ -34,6 +45,8 @@ tasks.withType<Javadoc>().configureEach {
 
 dependencies {
     compileOnlyApi(libs.findLibrary("jspecify").get())
+    "errorprone"(libs.findLibrary("errorprone-core").get())
+    "errorprone"(libs.findLibrary("nullaway").get())
 
     testImplementation(platform(libs.findLibrary("junit-bom").get()))
     testImplementation(libs.findLibrary("junit-jupiter").get())
