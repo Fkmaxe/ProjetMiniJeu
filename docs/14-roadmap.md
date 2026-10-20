@@ -14,7 +14,7 @@ Cocher `[x]` dans le même commit que l'implémentation.
   CA : `settings.gradle.kts` avec tous les modules (vides compilables) ; `build-logic` avec les 5 plugins de convention ; `libs.versions.toml` vérifié et figé sur les dernières versions stables (Paper 26.1.2, Velocity compatible 26.1, libs) ; toolchain Java 25 ; `./gradlew build` vert.
 - [x] **P0-02 — Règles de dépendance**
   CA : tâche `checkDependencyRules` qui échoue si un `games/*` dépend d'autre chose que `nexus-api` (test : ajouter une dépendance interdite → échec).
-- [ ] **P0-03 — Shadow vs loader de bibliothèques Paper**
+- [x] **P0-03 — Shadow vs loader de bibliothèques Paper**
   CA : ADR-009 rédigé ; mécanisme retenu appliqué à `nexus-core` (Hikari, Flyway, Lettuce, Caffeine) ; plugin démarre sur Paper 26.1.2.
 - [ ] **P0-04 — Environnement de dev Docker**
   Docs : `infra/README.md`.

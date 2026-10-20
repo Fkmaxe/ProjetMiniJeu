@@ -1,0 +1,5 @@
+name: NexusCore
+version: '${version}'
+main: fr.nexus.core.bootstrap.NexusCorePlugin
+api-version: '26.1'
+description: 'Runtime Nexus : instances, joueurs, permissions, interfaces et stats.'
